@@ -56,6 +56,7 @@ const generateInterviewQuestions = async (req, res) => {
 const generateConceptExplanation = async (req, res) => {
   try {
     const { question } = req.body;
+
     if (!question) {
       return res.status(400).json({ msg: "Question is required" });
     }
@@ -66,13 +67,28 @@ const generateConceptExplanation = async (req, res) => {
     const response = await model.generateContent(prompt);
     const candidates = response.response.candidates;
     const firstCandidate = candidates[0];
+
+    if (!firstCandidate || !firstCandidate.content || !firstCandidate.content.parts) {
+      return res.status(500).json({ msg: "No valid response from AI" });
+    }
+
     const parts = firstCandidate.content.parts;
     const rawText = parts.map((part) => part.text || "").join("");
 
     let cleanedText = rawText
-      .replace(/^```json\s*/, "")
-      .replace(/```[\s\S]*$/, "")
+      .replace(/^```json\s*/i, "")
+      .replace(/^```/, "")
+      .replace(/```$/, "")
       .trim();
+
+    const jsonStart = cleanedText.indexOf("{");
+    const jsonEnd = cleanedText.lastIndexOf("}");
+
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+      cleanedText = cleanedText.substring(jsonStart, jsonEnd + 1);
+    } else {
+      return res.status(500).json({ msg: "No valid JSON object found", raw: cleanedText });
+    }
 
     let data;
     try {
@@ -94,11 +110,11 @@ const generateConceptExplanation = async (req, res) => {
         .replace(/\*(.*?)\*/g, "<i>$1</i>"),
     };
 
-
     return res.status(200).json(formattedData);
   } catch (error) {
+    console.error("Server Error:", error.message);
     return res.status(500).json({
-      msg: "Failed to generate questions",
+      msg: "Failed to generate explanation",
       error: error.message,
     });
   }
