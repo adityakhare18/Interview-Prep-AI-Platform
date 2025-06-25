@@ -5,6 +5,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import MongoStore from "connect-mongo";
+import session from "express-session";
 
 import connectDB from './config/db.js';
 
@@ -43,6 +45,23 @@ connectDB();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+    }),
+    cookie: {
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", 
+    },
+  })
+);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
