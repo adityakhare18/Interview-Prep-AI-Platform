@@ -31,9 +31,9 @@ const app = express();
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      callback(null, origin);
-    },
+    origin: process.env.NODE_ENV === "production" 
+      ? ["https://interview-prep-ai-platform.vercel.app", "https://interview-prep-ai-platform-1.onrender.com"]
+      : ["http://localhost:3000", "http://localhost:5173"],
     credentials: true, 
   })
 );

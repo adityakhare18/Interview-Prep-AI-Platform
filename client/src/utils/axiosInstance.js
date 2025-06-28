@@ -28,34 +28,19 @@
 
 
 import axios from 'axios';
-import Cookies from 'js-cookie'; 
 import { BASE_URL } from "./apiPath";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 80000,
-  withCredentials: true, // ✅ Required for cookies to be sent in requests
+  withCredentials: true, // Required for cookies to be sent in requests
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });
 
-// ✅ Step 2: Use it inside request interceptor
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const accessToken = Cookies.get('token'); // <- This line
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Optional: Response Interceptor
+// Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;

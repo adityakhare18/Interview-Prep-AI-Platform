@@ -15,18 +15,12 @@ const UserProvider = ({ children }) => {
             return;
         }
 
-        const accessToken = localStorage.getItem("token");
-        if(!accessToken){
-            setLoading(false);
-            return;
-        }
-
         const fetchUser = async () => {
             try {
                 const response = await axiosInstance.get(API_PATH.AUTH.GET_PROFILE);
                 setUser(response.data);
             } catch (error) {
-                console.log("User not authenticated",error);
+                console.log("User not authenticated", error);
                 clearUser();
             }
             finally{
@@ -38,13 +32,11 @@ const UserProvider = ({ children }) => {
 
     const updateUser = (userData) => {
         setUser(userData);
-        localStorage.setItem("token",userData.token);
         setLoading(false);
     }
 
     const clearUser = () => {
         setUser(null);
-        localStorage.removeItem("token");
     }
 
     return (
